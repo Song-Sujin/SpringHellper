@@ -11,6 +11,10 @@
 			<a href="${pageContext.request.contextPath }/professor/list.do">
 				교수관리 웹페이지</a>
 		</li>
+		<li>
+			<a href="${pageContext.request.contextPath }/professor_ajax/list.do">
+				교수관리 웹페이지(Ajax)</a>
+		</li>
 	</ul>
 </body>
 </html>

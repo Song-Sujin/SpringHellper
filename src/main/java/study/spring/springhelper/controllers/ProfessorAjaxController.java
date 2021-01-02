@@ -85,7 +85,7 @@ public class ProfessorAjaxController
 		model.addAttribute("output", output);
 		model.addAttribute("pageData", pageData);
 		
-		return new ModelAndView("professor/list");
+		return new ModelAndView("professor/list_ajax");
 	}
 
 	// 상세 페이지
@@ -118,7 +118,7 @@ public class ProfessorAjaxController
 		// 3) View 처리
 		model.addAttribute("output", output);
 		
-		return new ModelAndView("professor/view");
+		return new ModelAndView("professor/view_ajax");
 	}
 
 	// 작성 폼 페이지
@@ -141,7 +141,7 @@ public class ProfessorAjaxController
 		// View에 추가
 		model.addAttribute("output", output);
 		
-		return new ModelAndView("professor/add");
+		return new ModelAndView("professor/add_ajax");
 	}
 
 	// 수정 폼 페이지
@@ -180,7 +180,7 @@ public class ProfessorAjaxController
 		model.addAttribute("output", output);
 		model.addAttribute("deptList", deptList);
 		
-		return new ModelAndView("professor/edit");
+		return new ModelAndView("professor/edit_ajax");
 	}
 
 }
