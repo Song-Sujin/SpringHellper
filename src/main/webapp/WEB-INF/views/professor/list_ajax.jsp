@@ -11,11 +11,11 @@
 </head>
 <body>
 	<h1>교수관리</h1>
-	<a href="${pageContext.request.contextPath }/professor/add.do">[교수추가]</a>
+	<a href="${pageContext.request.contextPath }/professor_ajax/add.do">[교수추가]</a>
 
 	<!-- 검색폼 -->
 	<form method="get"
-		action="${pageContext.request.contextPath }/professor/list.do">
+		action="${pageContext.request.contextPath }/professor_ajax/list.do">
 		<label for="keyword">검색어: </label> <input type="search" name="keyword"
 			id="keyword" placeholder="이름 검색" value="${keyword }" />
 		<button type="submit">검색</button>
@@ -37,7 +37,7 @@
 				<th width="100" align="center">소속학과위치</th>
 			</tr>
 		</thead>
-		<tbody>
+		<tbody id="list">
 			<c:choose>
 				<%-- 조회결과가 없는 경우 --%>
 				<c:when test="${output == null || fn:length(output) == 0 }">
@@ -62,7 +62,7 @@
 						</c:if>
 						
 						<%-- 상세페이지로 이동하기 위한 URL --%>
-						<c:url value="/professor/view.do" var="viewUrl">
+						<c:url value="/professor_ajax/view.do" var="viewUrl">
 							<c:param name="profno" value="${item.profno }" />
 						</c:url>
 						
@@ -82,59 +82,57 @@
 			</c:choose>
 		</tbody>
 	</table>
-
-	<!-- 페이지 번호 구현 -->
-	<%-- 이전 그룹에 대한 링크 --%>
-	<c:choose>
-		<%-- 이전 그룹으로 이동 가능하다면? --%>
-		<c:when test="${pageData.prevPage > 0 }">
-			<%-- 이동할 URL 생성 --%>
-			<c:url value="/professor/list.do" var="prevPageUrl">
-				<c:param name="page" value="${pageData.prevPage }" />
-				<c:param name="keyword" value="${keyword }" />
-			</c:url>
-			<a href="${prevPageUrl }">[이전]</a>
-		</c:when>
-		<c:otherwise>
-			[이전]
-		</c:otherwise>
-	</c:choose>
 	
-	<%-- 페이지 번호 (시작 페이지 부터 끝 페이지까지 반복) --%>
-	<c:forEach var="i" begin="${pageData.startPage }" end="${pageData.endPage }" varStatus="status">
-		<%-- 이동할 URL 생성 --%>
-		<c:url value="/professor/list.do" var="pageUrl">
-			<c:param name="page" value="${i }" />
-			<c:param name="keyword" value="${keyword }" />
-		</c:url>
+	<!-- 전체 페이지 수가 2페이지 이상인 경우 "더보기"버튼 노출 -->
+	<c:if test="${pageData.totalPage > 1 }">
+	<button id="btnMore">더보기</button>
+	</c:if>
+	
+	<!-- Handlebar 탬플릿 코드 -->
+	<script id="prof-list-tmpl" type="text/x-handlebars-template">
+		{{#each item}}
+		<tr>
 		
-		<%-- 페이지 번호 출력 --%>
-		<c:choose>
-			<%-- 현재 머물고 있는 페이지의 번호를 출력할 경우 링크 적용 안함 --%>
-			<c:when test="${pageData.nowPage == 1}">
-				<strong>[${i }]</strong>
-			</c:when>
-			<%-- 나머지 페이지의 경우 링크 적용함 --%>
-			<c:otherwise>
-				<a href="${pageUrl }">[${i }]</a>
-			</c:otherwise>
-		</c:choose>
-	</c:forEach>
+		
+		</tr>
+		{{/each}}
+	</script>
 	
-	<%-- 다음 그룹에 대한 링크 --%>
-	<c:choose>
-		<%-- 다음 그룹으로 이동 가능하다면? --%>
-		<c:when test="${pageData.nextPage > 0 }">
-			<%-- 이동할 URL 생성 --%>
-			<c:url value="/professor/list.do" var="nextPageUrl">
-				<c:param name="page" value="${pageData.nextPage }" />
-				<c:param name="keyword" value="${keyword }" />
-			</c:url>
-			<a href="${nextPageUrl }">[다음]</a>
-		</c:when>
-		<c:otherwise>
-			[다음]
-		</c:otherwise>
-	</c:choose>
+	<!-- Google CDN 서버로부터 jQuery 참조 -->
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js">
+	</script>
+	<!-- Handlebar CDN 참조 -->
+	<script src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.4.2/handlebars.min.js"></script>
+	<!-- jQuery Ajax Setup -->
+	<script src="${pageContext.request.contextPath }/assets/plugins/ajax/ajax_helper.js"></script>
+	
+	<!-- User code -->
+	<script type="text/javascript">
+		let nowPate = 1;
+		
+		#(function() {
+			// 더보기 버튼에 대한 이벤트 정의
+			$("#btnMore").click(function() {
+				// 다음 페이지를 요청하기 위해 페이지 변수 1 증가
+				nowPage++;
+				
+				// Restful API에 GET 방식 요청
+				$.get("${pageContext.request.contextPath}/professor", {
+					"page": nowPage		// 페이지 번호는 GET 파라미터로 전송한다.
+				}, function(json) {
+					var source = $("#prof-list-tmpl").html();	// 템플릿 코드 가져오기
+					var template = Handlebars.compile(source);	// 템플릿 코드 컴파일
+					var result = template(json);		// 템플릿 컴파일 결과물에 json 전달
+					$("#list").append(result);			// 최종 결과물을 #list 요소에 추가한다.
+					
+					// 현재 페이지 번호가 전체 페이지 수에 도달했다면 더보기 버튼을 숨긴다.
+					if(json.meta.totalPage <= nowPage)
+					{
+						$("#btnMore").hide();
+					}
+				});
+			});
+		});
+	</script>
 </body>
 </html>

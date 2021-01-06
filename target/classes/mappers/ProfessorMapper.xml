@@ -4,7 +4,7 @@
 	
 <mapper namespace="ProfessorMapper">
 	<!-- Beans의 멤버변수(property)이름과 대상 테이블의 컬럼(column)을 연결한다. -->
-	<resultMap type="study.spring.springhelper.mocel.Professor" id="professorMap">
+	<resultMap type="study.spring.springhelper.model.Professor" id="professorMap">
 		<result property="profno"	column="profno"/>
 		<result property="name"	column="name"/>
 		<result property="userid"	column="userid"/>
